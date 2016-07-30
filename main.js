@@ -1,5 +1,10 @@
 // Handlebars helpers
 
+// function apiToken(){
+//   sessionStorage.getItem('api_token');
+//   console.log(sessionStorage.getItem('api_token'))
+// }
+
 Handlebars.registerHelper('paragraphSplit', function(plaintext) {
   var i, output = '',
       lines = plaintext.split(/\r\n|\r|\n/g);
@@ -14,38 +19,66 @@ Handlebars.registerHelper('paragraphSplit', function(plaintext) {
 
 $(document).ready(function() {
   var index = 'http://localhost:3000/api/'
+  // var api_token = '1b5fccbdd4d7214e7ce6'
 
   var note_id = $("#note").html();
   var note_template = Handlebars.compile(note_id);
 
-  var noteform_id = $("#newnoteform").html();
+  var noteform_id = $("#newnotetemplate").html();
   var newNoteTemplate = Handlebars.compile(noteform_id)
 
+  var userform_id = $("#newusertemplate").html();
+  var newUserTemplate = Handlebars.compile(userform_id)
+
+  var loginform_id = $("#logintemplate").html();
+  var loginTemplate = Handlebars.compile(loginform_id)
+
+
+  releaseApiToken()
   getindex()
 
-
-  function getindex(){
-    $.getJSON(index+"notes", function(data) {
-      $('#maincontent').html("")
-      noteload(data);
-      })
+  function apiToken(){
+    sessionStorage.getItem('api_token');
   }
 
-// Loads note into templete using an object, assumes attributes are level 0
+  function setApiToken(token){
+    sessionStorage.setItem('api_token', token);
+    console.log(sessionStorage.getItem('api_token'))
+  }
+
+  function releaseApiToken(){
+    sessionStorage.setItem('api_token', "");
+    console.log(sessionStorage.getItem('api_token'))
+  }
+
+
+  // Loads index first, does not check for login yet
+  function getindex(){
+    $.getJSON(index+"notes", {
+      api_token: "${apiToken()}"
+    })
+      .done(function(data) {
+        console.log(data)
+        $('#maincontent').html("")
+        noteload(data);
+        })
+  }
+
+  // Loads note into template using an object, assumes attributes are level 0
   function noteload(data){
     $.each(data, function(i, note){
     note['time'] = [moment(note.created_at).format('MMMM Do YYYY, h:mm:ss a')]
-    $('#maincontent').append(note_template(note))
+    $('#maincontent').prepend(note_template(note))
     })
   }
 
-  // creates the content of the newnote modal - needs handlebar 'template'
+  // creates the fields for a new  modal - needs a handlebar 'template'
   function createModal(template, title, context) {
-    $('#newnotemodal .modal-title').text(title || "Our title")
-    $('#newnotemodal .modal-body').html(template(context || {}))
+    $('#newmodal .modal-title').text(title || "Our title")
+    $('#newmodal .modal-body').html(template(context || {}))
   }
 
-// GET list of notes from api that contain the same tag :name
+  // GET list of notes from api that contain the same tag :name
   $(document.body).on('click', '.tag_list a', function(ev){
     ev.preventDefault()
     $.getJSON(index+"notes/tag/"+ev.target.text, function(data) {
@@ -55,34 +88,99 @@ $(document).ready(function() {
     })
   })
 
-// Create form to submit a new post with through the modal
-$('#newnote').on('click', function(ev){
-  createModal(newNoteTemplate,"New Note")
-  $('#newnotemodal').modal('show')
-})
-// Submit new post through modal pop-up, (without login support)
-$(document.body).on('submit', '#chirp-form', function(ev){
-  ev.preventDefault()
-  postChirpForm()
-})
+  // POST new note from form data in new post modal
+  function postNoteForm(){
+    $.post({
+        url: index + "notes",
+        data: {api_token: api_token, title: $('#notetitle').val(), body: $('#notebody').val(), tags: $('#notetags').val()},
+        success: function(data){
+                  console.log(data);
+                  $('#maincontent').prepend(note_template(data));
+                  $('#newmodal').modal('hide');
+                },
+        error: function(data){
+                  console.log(data)
+                }
+    })
+  }
+
+  // POST create new user from new user modal pop-up
+  function postUserForm(){
+    $.post({
+        url: index + "users",
+        data: {email: $('#useremail').val(), password: $('#userpassword').val(), password_confirmation: $('#passwordconfirm').val()},
+        success: function(data){
+                  console.log(data);
+                  $('#newmodal').modal('hide');
+                },
+        error: function(data){
+                  console.log(data);
+                  $('#userformerrors').html("<p class=\"bg-danger\">" + data.responseText + "</p>");
+                }
+    })
+  }
+
+  // POST Login with an existing user from modal pop-up
+  function postLoginForm(){
+    $.post({
+        url: index + "users/login",
+        data: {email: $('#useremail').val(), password: $('#userpassword').val()},
+        success: function(data){
+                  console.log(data);
+                  setApiToken(data.api_token);
+                  $('#newmodal').modal('hide');
+                  getindex()
+                },
+        error: function(data){
+                  console.log(data);
+                  var error = data;
+                  $('#userformerrors').html("<p class=\"bg-danger\">" + data.responseJSON.error + "</p>");
+                }
+    })
+  }
 
 
+  // Click on brand takes back to index
+  $('#homeindex').on('click', function(ev){
+    getindex()
+    $('#title').text('Notemeister 5000')
+  })
 
+  // Create form to login to the notemeister 5000
+  $('#login').on('click', function(ev){
+    createModal(loginTemplate,"User Login")
+    $('#newmodal').modal('show')
+  })
 
+  // Create form to submit a new post with through the modal
+  $('#newnote').on('click', function(ev){
+    createModal(newNoteTemplate,"New Note")
+    $('#newmodal').modal('show')
+  })
 
+  // Create form to submit a new user with through the modal
+  $('#newuser').on('click', function(ev){
+    createModal(newUserTemplate,"New User")
+    $('#newmodal').modal('show')
+  })
 
+  // Submit new post through modal pop-up, (without login support)
+  $(document.body).on('submit', '#noteform', function(ev){
+    ev.preventDefault()
+    postNoteForm()
+  })
 
+  // Submit new post through modal pop-up, (without login support)
+  $(document.body).on('submit', '#userform', function(ev){
+    ev.preventDefault()
+    postUserForm()
+  })
 
-
-
-
-
-
-
-
-
-
-
+  // Submit new post through modal pop-up, (without login support)
+  $(document.body).on('submit', '#loginform', function(ev){
+    ev.preventDefault()
+    postLoginForm()
+  })
 
 
 
