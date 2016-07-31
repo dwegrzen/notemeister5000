@@ -1,9 +1,3 @@
-// Handlebars helpers
-
-// function apiToken(){
-//   sessionStorage.getItem('api_token');
-//   console.log(sessionStorage.getItem('api_token'))
-// }
 
 Handlebars.registerHelper('paragraphSplit', function(plaintext) {
   var i, output = '',
@@ -16,10 +10,8 @@ Handlebars.registerHelper('paragraphSplit', function(plaintext) {
   return new Handlebars.SafeString(output);
 });
 
-
 $(document).ready(function() {
-  var index = 'https://6080bebb.ngrok.io/api/'
-  // var api_token = '1b5fccbdd4d7214e7ce6'
+  var index = 'https://immense-plains-33478.herokuapp.com/api/'
 
   var note_id = $("#note").html();
   var note_template = Handlebars.compile(note_id);
@@ -42,10 +34,7 @@ $(document).ready(function() {
   var hashnote_id = $("#notemodaltemplate").html();
   var hashNoteTemplate = Handlebars.compile(hashnote_id)
 
-
-
   checkStatus()
-
 
   function checkStatus(){
     if (apiToken()) {
@@ -57,7 +46,6 @@ $(document).ready(function() {
       getindex()
     }
   }
-
 
   function apiToken(){
     return sessionStorage.getItem('api_token');
