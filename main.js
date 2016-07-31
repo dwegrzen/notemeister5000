@@ -38,24 +38,22 @@ $(document).ready(function() {
   getindex()
 
   function apiToken(){
-    sessionStorage.getItem('api_token');
+    return sessionStorage.getItem('api_token');
   }
 
   function setApiToken(token){
     sessionStorage.setItem('api_token', token);
-    console.log(sessionStorage.getItem('api_token'))
   }
 
   function releaseApiToken(){
     sessionStorage.setItem('api_token', "");
-    console.log(sessionStorage.getItem('api_token'))
   }
 
 
   // Loads index first, does not check for login yet
   function getindex(){
     $.getJSON(index+"notes", {
-      api_token: "${apiToken()}"
+      api_token: apiToken()
     })
       .done(function(data) {
         console.log(data)
@@ -94,7 +92,6 @@ $(document).ready(function() {
         url: index + "notes",
         data: {api_token: api_token, title: $('#notetitle').val(), body: $('#notebody').val(), tags: $('#notetags').val()},
         success: function(data){
-                  console.log(data);
                   $('#maincontent').prepend(note_template(data));
                   $('#newmodal').modal('hide');
                 },
@@ -128,6 +125,7 @@ $(document).ready(function() {
         success: function(data){
                   console.log(data);
                   setApiToken(data.api_token);
+                  $('#loggedin').text("logged in with " + $('#useremail').val());
                   $('#newmodal').modal('hide');
                   getindex()
                 },
