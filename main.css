@@ -1,2 +1,10 @@
 /*empty*/
 body { padding-top: 70px; }
+
+ul.tag_list.list-inline {
+  margin-bottom: 0px;
+}
+
+#noteedit {
+  margin-top: -5px;
+}

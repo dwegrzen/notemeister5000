@@ -30,37 +30,76 @@ $(document).ready(function() {
   var userform_id = $("#newusertemplate").html();
   var newUserTemplate = Handlebars.compile(userform_id)
 
+  var usernote_id = $("#usernote").html();
+  var userNoteTemplate = Handlebars.compile(usernote_id)
+
   var loginform_id = $("#logintemplate").html();
   var loginTemplate = Handlebars.compile(loginform_id)
 
+  var hashnote_id = $("#notemodaltemplate").html();
+  var hashNoteTemplate = Handlebars.compile(hashnote_id)
 
-  releaseApiToken()
-  getindex()
+
+
+  checkStatus()
+
+
+  function checkStatus(){
+    if (apiToken()) {
+      $('#loggedin').text("logged in as " + userEmail());
+      $('#status').text("Logout");
+      getuserindex()
+    }
+    else {
+      getindex()
+    }
+  }
+
 
   function apiToken(){
     return sessionStorage.getItem('api_token');
   }
 
-  function setApiToken(token){
+  function userEmail(){
+    return sessionStorage.getItem('email');
+  }
+
+  function setApiToken(token, email){
     sessionStorage.setItem('api_token', token);
+    sessionStorage.setItem('email', email)
   }
 
   function releaseApiToken(){
     sessionStorage.setItem('api_token', "");
+    sessionStorage.setItem('email', "")
   }
 
 
-  // Loads index first, does not check for login yet
+  // Loads index will use api_token to validate user if available, then only shows their notes
   function getindex(){
     $.getJSON(index+"notes", {
       api_token: apiToken()
     })
       .done(function(data) {
-        console.log(data)
         $('#maincontent').html("")
         noteload(data);
         })
   }
+
+  // Loads index will use api_token to validate user if available, then only shows their notes
+  function getuserindex(){
+    $.getJSON(index+"notes", {
+      api_token: apiToken()
+    })
+      .done(function(data) {
+        $('#maincontent').html("")
+        $.each(data, function(i, note){
+        note['time'] = [moment(note.created_at).format('MMMM Do YYYY, h:mm:ss a')]
+        $('#maincontent').prepend(userNoteTemplate(note))
+        })
+      })
+  }
+
 
   // Loads note into template using an object, assumes attributes are level 0
   function noteload(data){
@@ -72,7 +111,7 @@ $(document).ready(function() {
 
   // creates the fields for a new  modal - needs a handlebar 'template'
   function createModal(template, title, context) {
-    $('#newmodal .modal-title').text(title || "Our title")
+    $('#newmodal .modal-title').text(title)
     $('#newmodal .modal-body').html(template(context || {}))
   }
 
@@ -124,11 +163,11 @@ $(document).ready(function() {
         data: {email: $('#useremail').val(), password: $('#userpassword').val()},
         success: function(data){
                   console.log(data);
-                  setApiToken(data.api_token);
-                  $('#loggedin').text("logged in with " + $('#useremail').val());
+                  setApiToken(data.api_token, $('#useremail').val());
+                  $('#loggedin').text("logged in as " + $('#useremail').val());
                   $('#status').text("Logout");
                   $('#newmodal').modal('hide');
-                  getindex()
+                  getuserindex()
                 },
         error: function(data){
                   console.log(data);
@@ -141,11 +180,11 @@ $(document).ready(function() {
 
   // Click on brand takes back to index
   $('#homeindex').on('click', function(ev){
-    getindex()
+    checkStatus();
     $('#title').text('Notemeister 5000')
   })
 
-  // Create form to login to the notemeister 5000
+  // Create form to login or logout on the notemeister 5000
   $('#status').on('click', function(ev){
     if ($('#status').text() == "Login") {
       createModal(loginTemplate,"User Login");
@@ -155,41 +194,71 @@ $(document).ready(function() {
       $('#loggedin').text("");
       releaseApiToken();
       $('#status').text("Login");
-      getindex();
+      checkStatus()
     }
   })
 
-  // Create form to submit a new post with through the modal
+  // Create form to edit an existing post through the modal
+  $('#maincontent.col-sm-12').on('click', '#noteedit', function(ev){
+    console.log(ev);
+    console.log(ev.target.contents())
+
+
+    // createModal(newNoteTemplate,"New Note")
+    // $('#newmodal').modal('show')
+  })
+
+
+  // Selector helper
+  // $('*').on('click', function(ev){
+  //   console.log(ev);
+  //   // createModal(newNoteTemplate,"New Note")
+  //   // $('#newmodal').modal('show')
+  // })
+
+
+  // Create form to edit a user's note through the modal
   $('#newnote').on('click', function(ev){
-    createModal(newNoteTemplate,"New Note")
+    createModal(newNoteTemplate,"New Note");
     $('#newmodal').modal('show')
   })
 
-  // Create form to submit a new user with through the modal
+  // Create form to submit a new user through the modal
   $('#newuser').on('click', function(ev){
-    createModal(newUserTemplate,"New User")
+    createModal(newUserTemplate,"New User");
     $('#newmodal').modal('show')
   })
 
-  // Submit new post through modal pop-up, (without login support)
+  // Submit new note through modal pop-up
   $(document.body).on('submit', '#noteform', function(ev){
-    ev.preventDefault()
     postNoteForm()
   })
 
-  // Submit new post through modal pop-up, (without login support)
+  // Submit new user request through modal pop-up
   $(document.body).on('submit', '#userform', function(ev){
-    ev.preventDefault()
     postUserForm()
   })
 
-  // Submit new post through modal pop-up, (without login support)
+  // Submit login credentials through modal pop-up
   $(document.body).on('submit', '#loginform', function(ev){
-    ev.preventDefault()
     postLoginForm()
   })
 
+  // Submit editted note through modal pop-up
+  $(document.body).on('submit', '.edit', function(ev){
+    console.log(ev);
+    // postEditNoteForm()
+  })
 
+  // Creates a modal showing the note info matching the id of the hash when typed into url after #
+  $(window).on('hashchange', function(ev) {
+    var hash = window.location.hash.replace(/^#/,'');
+    $.getJSON(index+"notes/"+hash)
+      .done(function(data) {
+        createModal(hashNoteTemplate, data.title, data)
+        $('#newmodal').modal('show')
+        })
+  })
 
 
 })

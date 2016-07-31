@@ -87,15 +87,36 @@
     </div>
   </script>
 
+  <script id="usernote" type="text/x-handlebars-template">
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{title}}</h3>
+      </div>
+      <div class="panel-body">
+        <h5>{{user.email}} <small>on {{time}}</small></h5>
+        <p>{{paragraphSplit body}}</p>
+      </div>
+      <div class="panel-footer edit">
+        <button class="btn btn-primary btn-sm pull-right" id="noteedit" type="submit">Edit</button>
+        <ul class="tag_list list-inline vcenter">
+          <li>Tags: </li>
+        {{#each tags}}
+          <li><a href="#">{{this.name}}</a></li>
+        {{/each}}
+        </ul>
+      </div>
+    </div>
+  </script>
+
   <script id="newnotetemplate" type="text/x-handlebars-template">
     <form id="noteform">
       <div class="form-group">
         <label >Note Title <small>(Required)</small></label>
-        <input type="text" class="form-control" id="notetitle" placeholder="Your title...">
+        <input type="text" class="form-control" id="notetitle" placeholder="Your title...">{{title}}
       </div>
       <div class="form-group">
         <label >Note Body <small>(Required)</small></label>
-        <textarea type="text" class="form-control" rows="5" id="notebody" placeholder="Your note..."></textarea>
+        <textarea type="text" class="form-control" rows="5" id="notebody" placeholder="Your note...">{{body}}</textarea>
       </div>
       <div class="form-group">
         <label >Tags <small>(optional)</small></label>
@@ -105,6 +126,12 @@
     </form>
   </script>
 
+  <script id="notemodaltemplate" type="text/x-handlebars-template">
+    <div id="hashmodal">
+      <h5>{{user.email}} <small>on {{time}}</small></h5>
+      <p>{{paragraphSplit body}}</p>
+    </div>
+  </script>
 
   <script id="newusertemplate" type="text/x-handlebars-template">
     <form id="userform">
