@@ -18,7 +18,7 @@ Handlebars.registerHelper('paragraphSplit', function(plaintext) {
 
 
 $(document).ready(function() {
-  var index = 'http://localhost:3000/api/'
+  var index = 'https://6080bebb.ngrok.io/api/'
   // var api_token = '1b5fccbdd4d7214e7ce6'
 
   var note_id = $("#note").html();
@@ -145,9 +145,15 @@ $(document).ready(function() {
   })
 
   // Create form to login to the notemeister 5000
-  $('#login').on('click', function(ev){
-    createModal(loginTemplate,"User Login")
-    $('#newmodal').modal('show')
+  $('#status').on('click', function(ev){
+    if $('#status').text() == "Login"
+      createModal(loginTemplate,"User Login");
+      $('#newmodal').modal('show');
+    else
+      $('#loggedin').text("");
+      releaseApiToken();
+      getindex();
+
   })
 
   // Create form to submit a new post with through the modal
