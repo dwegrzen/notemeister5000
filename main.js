@@ -224,12 +224,10 @@ $(document).ready(function() {
     $('#newmodal').modal('show')
   })
 
-
   // Selector helper
-  $('*').on('click', function(ev){
-    console.log(ev);
-  })
-
+  // $('*').on('click', function(ev){
+  //   console.log(ev);
+  // })
 
   // Create form to edit a user's note through the modal
   $('#newnote').on('click', function(ev){
@@ -270,12 +268,18 @@ $(document).ready(function() {
 
   // Search for notes with tag through navbar search form
   $(document.body).on('click', '#search', function(ev){
-    alert("hey")
-    $.getJSON(index + "notes/tag/" + $('#searchinput').val(), function(data) {
-      $('#maincontent').html("")
-      noteload(data.notes);
-      $('#title').text('Notemeister 5000 Tag Search:' + $('#searchinput').val())
-    })
+    $.getJSON(index + "notes/tag/" + $('#searchinput').val())
+      .done(function(data) {
+        alert("success")
+        $('#maincontent').html("")
+        noteload(data.notes);
+        $('#title').text('Notemeister 5000 Tag Search: ' + $('#searchinput').val())
+      })
+      .fail(function(data) {
+        alert("fail")
+        console.log(data);
+        $('#maincontent').html("Search returned no results")
+      })
   })
 
   // GET list of notes from api that contain the same tag :name
