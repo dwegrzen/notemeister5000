@@ -27,6 +27,9 @@ $(document).ready(function() {
   var noteform_id = $("#newnotetemplate").html();
   var newNoteTemplate = Handlebars.compile(noteform_id)
 
+  var editform_id = $("#editnotetemplate").html();
+  var editNoteTemplate = Handlebars.compile(editform_id)
+
   var userform_id = $("#newusertemplate").html();
   var newUserTemplate = Handlebars.compile(userform_id)
 
@@ -77,6 +80,7 @@ $(document).ready(function() {
 
   // Loads index will use api_token to validate user if available, then only shows their notes
   function getindex(){
+    $('#title').text('Notemeister 5000');
     $.getJSON(index+"notes", {
       api_token: apiToken()
     })
@@ -88,11 +92,12 @@ $(document).ready(function() {
 
   // Loads index will use api_token to validate user if available, then only shows their notes
   function getuserindex(){
+    $('#title').text('Notemeister 5000');
     $.getJSON(index+"notes", {
       api_token: apiToken()
     })
       .done(function(data) {
-        $('#maincontent').html("")
+        $('#maincontent').html("");
         $.each(data, function(i, note){
         note['time'] = [moment(note.created_at).format('MMMM Do YYYY, h:mm:ss a')]
         $('#maincontent').prepend(userNoteTemplate(note))
@@ -111,25 +116,16 @@ $(document).ready(function() {
 
   // creates the fields for a new  modal - needs a handlebar 'template'
   function createModal(template, title, context) {
-    $('#newmodal .modal-title').text(title)
+    $('#newmodal .modal-title').text(title);
     $('#newmodal .modal-body').html(template(context || {}))
   }
 
-  // GET list of notes from api that contain the same tag :name
-  $(document.body).on('click', '.tag_list a', function(ev){
-    ev.preventDefault()
-    $.getJSON(index+"notes/tag/"+ev.target.text, function(data) {
-      $('#maincontent').html("")
-      noteload(data.notes);
-      $('#title').text('Notemeister 5000: ' + ev.target.text)
-    })
-  })
 
-  // POST new note from form data in new post modal
+  // POST new note from form data in new note modal
   function postNoteForm(){
     $.post({
         url: index + "notes",
-        data: {api_token: api_token, title: $('#notetitle').val(), body: $('#notebody').val(), tags: $('#notetags').val()},
+        data: {api_token: apiToken(), title: $('#notetitle').val(), body: $('#notebody').val(), tags: $('#notetags').val()},
         success: function(data){
                   $('#maincontent').prepend(note_template(data));
                   $('#newmodal').modal('hide');
@@ -139,6 +135,22 @@ $(document).ready(function() {
                 }
     })
   }
+
+  // POST editted note from form data in edit note modal
+  function putEditForm(id){
+    $.ajax({
+         url: index + "notes/" + $('#disabledinput').val(),
+         type: 'PUT',
+         data: {api_token: apiToken(), title: $('#notetitle').val(), body: $('#notebody').val()},
+         success: function(data){
+                   $('#newmodal').modal('hide');
+                   getuserindex()
+                 },
+         error: function(data){
+                   console.log(data)
+                 }
+     })
+   }
 
   // POST create new user from new user modal pop-up
   function postUserForm(){
@@ -178,7 +190,8 @@ $(document).ready(function() {
   }
 
 
-  // Click on brand takes back to index
+
+  // Clicking on brand takes back to appropriate index
   $('#homeindex').on('click', function(ev){
     checkStatus();
     $('#title').text('Notemeister 5000')
@@ -200,27 +213,33 @@ $(document).ready(function() {
 
   // Create form to edit an existing post through the modal
   $('#maincontent.col-sm-12').on('click', '#noteedit', function(ev){
-    console.log(ev);
-    console.log(ev.target.contents())
-
-
-    // createModal(newNoteTemplate,"New Note")
-    // $('#newmodal').modal('show')
+    var id = ($(this).parents('div.panel.panel-info').find('div.id').text())
+    $.getJSON(index+"notes/"+id)
+      .done(function(data) {
+        createModal(editNoteTemplate, "Edit Note", data)
+        $('#notetitle').val(data.title);
+        $('#disabledinput').val(id);
+        $('#notebody').val(data.body);
+      })
+    $('#newmodal').modal('show')
   })
 
 
   // Selector helper
-  // $('*').on('click', function(ev){
-  //   console.log(ev);
-  //   // createModal(newNoteTemplate,"New Note")
-  //   // $('#newmodal').modal('show')
-  // })
+  $('*').on('click', function(ev){
+    console.log(ev);
+  })
 
 
   // Create form to edit a user's note through the modal
   $('#newnote').on('click', function(ev){
+    if (apiToken()) {
     createModal(newNoteTemplate,"New Note");
     $('#newmodal').modal('show')
+    }
+    else {
+      alert("Please login or create a new user.")
+    }
   })
 
   // Create form to submit a new user through the modal
@@ -245,9 +264,28 @@ $(document).ready(function() {
   })
 
   // Submit editted note through modal pop-up
-  $(document.body).on('submit', '.edit', function(ev){
-    console.log(ev);
-    // postEditNoteForm()
+  $(document.body).on('submit', '#editnoteform', function(ev){
+    putEditForm()
+  })
+
+  // Search for notes with tag through navbar search form
+  $(document.body).on('click', '#search', function(ev){
+    alert("hey")
+    $.getJSON(index + "notes/tag/" + $('#searchinput').val(), function(data) {
+      $('#maincontent').html("")
+      noteload(data.notes);
+      $('#title').text('Notemeister 5000 Tag Search:' + $('#searchinput').val())
+    })
+  })
+
+  // GET list of notes from api that contain the same tag :name
+  $(document.body).on('click', '.tag_list a', function(ev){
+    ev.preventDefault()
+    $.getJSON(index+"notes/tag/"+ev.target.text, function(data) {
+      $('#maincontent').html("")
+      noteload(data.notes);
+      $('#title').text('Notemeister 5000: ' + ev.target.text)
+    })
   })
 
   // Creates a modal showing the note info matching the id of the hash when typed into url after #
