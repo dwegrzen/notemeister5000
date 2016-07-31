@@ -126,6 +126,7 @@ $(document).ready(function() {
                   console.log(data);
                   setApiToken(data.api_token);
                   $('#loggedin').text("logged in with " + $('#useremail').val());
+                  $('#status').text("Logout");
                   $('#newmodal').modal('hide');
                   getindex()
                 },
@@ -146,14 +147,16 @@ $(document).ready(function() {
 
   // Create form to login to the notemeister 5000
   $('#status').on('click', function(ev){
-    if $('#status').text() == "Login"
+    if ($('#status').text() == "Login") {
       createModal(loginTemplate,"User Login");
       $('#newmodal').modal('show');
-    else
+    }
+    else {
       $('#loggedin').text("");
       releaseApiToken();
+      $('#status').text("Login");
       getindex();
-
+    }
   })
 
   // Create form to submit a new post with through the modal
