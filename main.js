@@ -11,7 +11,7 @@ Handlebars.registerHelper('paragraphSplit', function(plaintext) {
 });
 
 $(document).ready(function() {
-  var index = 'http://localhost:3000/api/'
+  var index = 'https://immense-plains-33478.herokuapp.com/api/'
 
   var note_id = $("#note").html();
   var note_template = Handlebars.compile(note_id);
