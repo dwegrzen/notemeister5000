@@ -11,7 +11,7 @@ Handlebars.registerHelper('paragraphSplit', function(plaintext) {
 });
 
 $(document).ready(function() {
-  var index = 'https://immense-plains-33478.herokuapp.com/api/'
+  var index = 'http://localhost:3000/api/'
 
   var note_id = $("#note").html();
   var note_template = Handlebars.compile(note_id);
@@ -120,6 +120,8 @@ $(document).ready(function() {
                 },
         error: function(data){
                   console.log(data)
+                  $('#userformerrors').html("<p class=\"bg-danger\">" + data.responseText + "</p>");
+
                 }
     })
   }
@@ -136,6 +138,7 @@ $(document).ready(function() {
                  },
          error: function(data){
                    console.log(data)
+                   $('#userformerrors').html("<p class=\"bg-danger\">" + data.responseText + "</p>");
                  }
      })
    }
@@ -285,6 +288,7 @@ $(document).ready(function() {
     var hash = window.location.hash.replace(/^#/,'');
     $.getJSON(index+"notes/"+hash)
       .done(function(data) {
+        data['time'] = [moment(note.created_at).format('MMMM Do YYYY, h:mm:ss a')]
         createModal(hashNoteTemplate, data.title, data)
         $('#newmodal').modal('show')
         })
