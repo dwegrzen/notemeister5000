@@ -12,6 +12,8 @@ Handlebars.registerHelper('paragraphSplit', function(plaintext) {
 
 $(document).ready(function() {
   var index = 'https://immense-plains-33478.herokuapp.com/api/'
+  // var index = 'http://localhost:3000/api/'
+
 
   var note_id = $("#note").html();
   var note_template = Handlebars.compile(note_id);
@@ -40,10 +42,15 @@ $(document).ready(function() {
     if (apiToken()) {
       $('#loggedin').text("logged in as " + userEmail());
       $('#status').text("Logout");
+      $('#newnote').show();
+      $('#newuser').hide();
       getuserindex()
     }
     else {
       getindex()
+      $('#newnote').hide();
+      $('#newuser').show();
+      $('#loggedin').text("");
     }
   }
 
@@ -61,8 +68,12 @@ $(document).ready(function() {
   }
 
   function releaseApiToken(){
-    sessionStorage.setItem('api_token', "");
-    sessionStorage.setItem('email', "")
+    sessionStorage.removeItem('api_token');
+    sessionStorage.removeItem('email')
+  }
+
+  function tempdata(){
+    return sessionStorage.getItem('api_token');
   }
 
 
@@ -131,7 +142,7 @@ $(document).ready(function() {
     $.ajax({
          url: index + "notes/" + $('#disabledinput').val(),
          type: 'PUT',
-         data: {api_token: apiToken(), title: $('#notetitle').val(), body: $('#notebody').val()},
+         data: {api_token: apiToken(), title: $('#notetitle').val(), body: $('#notebody').val(), tags: $('#notetags').val()},
          success: function(data){
                    $('#newmodal').modal('hide');
                    getuserindex()
@@ -165,15 +176,13 @@ $(document).ready(function() {
         url: index + "users/login",
         data: {email: $('#useremail').val(), password: $('#userpassword').val()},
         success: function(data){
-                  console.log(data);
                   setApiToken(data.api_token, $('#useremail').val());
                   $('#loggedin').text("logged in as " + $('#useremail').val());
                   $('#status').text("Logout");
                   $('#newmodal').modal('hide');
-                  getuserindex()
+                  checkStatus()
                 },
         error: function(data){
-                  console.log(data);
                   var error = data;
                   $('#userformerrors').html("<p class=\"bg-danger\">" + data.responseJSON.error + "</p>");
                 }
@@ -197,6 +206,7 @@ $(document).ready(function() {
     else {
       $('#loggedin').text("");
       releaseApiToken();
+      $('#newuser').show();
       $('#status').text("Login");
       checkStatus()
     }
@@ -208,9 +218,12 @@ $(document).ready(function() {
     $.getJSON(index+"notes/"+id)
       .done(function(data) {
         createModal(editNoteTemplate, "Edit Note", data)
+        var tagsstring = data.tags.map(function(x){return x.name}).join(", ")
+        // window.foo = data;
         $('#notetitle').val(data.title);
         $('#disabledinput').val(id);
         $('#notebody').val(data.body);
+        $('#notetags').val(tagsstring)
       })
     $('#newmodal').modal('show')
   })
@@ -239,36 +252,38 @@ $(document).ready(function() {
 
   // Submit new note through modal pop-up
   $(document.body).on('submit', '#noteform', function(ev){
+    ev.preventDefault()
     postNoteForm()
   })
 
   // Submit new user request through modal pop-up
   $(document.body).on('submit', '#userform', function(ev){
+    ev.preventDefault()
     postUserForm()
   })
 
   // Submit login credentials through modal pop-up
   $(document.body).on('submit', '#loginform', function(ev){
+    ev.preventDefault()
     postLoginForm()
   })
 
   // Submit editted note through modal pop-up
   $(document.body).on('submit', '#editnoteform', function(ev){
+    ev.preventDefault()
     putEditForm()
   })
 
   // Search for notes with tag through navbar search form
   $(document.body).on('click', '#search', function(ev){
+    ev.preventDefault()
     $.getJSON(index + "notes/tag/" + $('#searchinput').val())
       .done(function(data) {
-        alert("success")
         $('#maincontent').html("")
         noteload(data.notes);
         $('#title').text('Notemeister 5000 Tag Search: ' + $('#searchinput').val())
       })
       .fail(function(data) {
-        alert("fail")
-        console.log(data);
         $('#maincontent').html("Search returned no results")
       })
   })

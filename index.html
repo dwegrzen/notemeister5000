@@ -114,6 +114,7 @@
       <div class="form-group">
         <label >Note Title <small>(Required)</small></label>
         <input type="text" class="form-control" id="notetitle" placeholder="Your title...">
+      </div>
       <div class="form-group">
         <label >Note Body <small>(Required)</small></label>
         <textarea type="text" class="form-control" rows="5" id="notebody" placeholder="Your note..."></textarea>
@@ -134,14 +135,19 @@
       <div class="form-group">
         <label >Note Title <small>(Required)</small></label>
         <input type="text" class="form-control" id="notetitle" placeholder="Your title...">
-        <div class="form-group">
+      </div>
+      <div class="form-group" style="display:none">
           <label >Note ID</label>
           <input type="text" class="form-control" id="disabledinput" placeholder="Note ID" disabled>
+      </div>
       <div class="form-group">
         <label >Note Body <small>(Required)</small></label>
         <textarea type="text" class="form-control" rows="5" id="notebody" placeholder="Your note..."></textarea>
       </div>
-    </div>
+      <div class="form-group">
+        <label >Tags <small>(optional)</small></label>
+        <input type="text" class="form-control" id="notetags" placeholder="Tags...(separate each with a comma)">
+      </div>
     <div id="userformerrors">
     </div>
       <button type="submit" class="btn btn-default">Submit</button>
@@ -163,11 +169,11 @@
       </div>
       <div class="form-group">
         <label>User Password<small> (Required)</small></label>
-        <input type="password" class="form-control" rows="5" id="userpassword" placeholder="Your password">
+        <input type="password" class="form-control"  id="userpassword" placeholder="Your password">
       </div>
       <div class="form-group">
         <label>Confirm Password<small> (Required)</small></label>
-        <input type="password" class="form-control" rows="5" id="passwordconfirm" placeholder="Password confirmation">
+        <input type="password" class="form-control"  id="passwordconfirm" placeholder="Password confirmation">
       </div>
       <div id="userformerrors">
       </div>
@@ -183,10 +189,12 @@
       </div>
       <div class="form-group">
         <label>User Password<small> (Required)</small></label>
-        <input type="password" class="form-control" rows="5" id="userpassword" placeholder="Your password">
+        <input type="password" class="form-control"  id="userpassword" placeholder="Your password">
       </div>
       <div id="userformerrors">
       </div>
       <button type="submit" class="btn btn-default">Submit</button>
     </form>
   </script>
+
+</html>
