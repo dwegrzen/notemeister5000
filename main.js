@@ -61,8 +61,8 @@ $(document).ready(function() {
   }
 
   function releaseApiToken(){
-    sessionStorage.setItem('api_token', "");
-    sessionStorage.setItem('email', "")
+    sessionStorage.removeItem('api_token');
+    sessionStorage.removeItem('email')
   }
 
 
@@ -261,14 +261,11 @@ $(document).ready(function() {
   $(document.body).on('click', '#search', function(ev){
     $.getJSON(index + "notes/tag/" + $('#searchinput').val())
       .done(function(data) {
-        alert("success")
         $('#maincontent').html("")
         noteload(data.notes);
         $('#title').text('Notemeister 5000 Tag Search: ' + $('#searchinput').val())
       })
       .fail(function(data) {
-        alert("fail")
-        console.log(data);
         $('#maincontent').html("Search returned no results")
       })
   })
