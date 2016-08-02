@@ -1,8 +1,22 @@
 /*empty*/
-body { padding-top: 70px; }
+body {
+  padding-top: 70px;
+  background-image: url("bg-10-full.jpg");
+  background-repeat: no-repeat;
+  background-position: right top;
+  background-attachment: fixed;
+}
 
 ul.tag_list.list-inline {
   margin-bottom: 0px;
+}
+
+#tempimage {
+  height: 100px;
+}
+
+#noteimage {
+  height: 200px;
 }
 
 #noteedit {
