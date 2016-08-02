@@ -27,9 +27,6 @@ $(document).ready(function() {
   var userform_id = $("#newusertemplate").html();
   var newUserTemplate = Handlebars.compile(userform_id)
 
-  var usernote_id = $("#usernote").html();
-  var userNoteTemplate = Handlebars.compile(usernote_id)
-
   var loginform_id = $("#logintemplate").html();
   var loginTemplate = Handlebars.compile(loginform_id)
 
@@ -44,7 +41,7 @@ $(document).ready(function() {
       $('#status').text("Logout");
       $('#newnote').show();
       $('#newuser').hide();
-      getuserindex()
+      getindex()
     }
     else {
       getindex()
@@ -72,11 +69,6 @@ $(document).ready(function() {
     sessionStorage.removeItem('email')
   }
 
-  function tempdata(){
-    return sessionStorage.getItem('api_token');
-  }
-
-
   // Loads index will use api_token to validate user if available, then only shows their notes
   function getindex(){
     $('#title').text('Notemeister 5000');
@@ -84,32 +76,24 @@ $(document).ready(function() {
       api_token: apiToken()
     })
       .done(function(data) {
+        console.log(data)
         $('#maincontent').html("")
         noteload(data);
         })
   }
 
-  // Loads index will use api_token to validate user if available, then only shows their notes
-  function getuserindex(){
-    $('#title').text('Notemeister 5000');
-    $.getJSON(index+"notes", {
-      api_token: apiToken()
-    })
-      .done(function(data) {
-        $('#maincontent').html("");
-        $.each(data, function(i, note){
-        note['time'] = [moment(note.created_at).format('MMMM Do YYYY, h:mm:ss a')]
-        $('#maincontent').prepend(userNoteTemplate(note))
-        })
-      })
-  }
-
-
   // Loads note into template using an object, assumes attributes are level 0
   function noteload(data){
     $.each(data, function(i, note){
-    note['time'] = [moment(note.created_at).format('MMMM Do YYYY, h:mm:ss a')]
-    $('#maincontent').prepend(note_template(note))
+      note['time'] = [moment(note.created_at).format('MMMM Do YYYY, h:mm:ss a')]
+      $('#maincontent').prepend(note_template(note))
+      if (note.note_image == null){
+        $('#imagecontainer').hide();
+        $('.responsivecol').removeClass('col-sm-8').addClass('col-sm-12')
+      }
+      if (userEmail() == note.user.email ) {
+        $('#noteedit').show()
+      }
     })
   }
 
@@ -119,12 +103,23 @@ $(document).ready(function() {
     $('#newmodal .modal-body').html(template(context || {}))
   }
 
+// Method prepares data which may include picture data for new/editted notes
+  function NoteFormData(someform) {
+    form = document.getElementById(someform)
+    var data = new FormData(form)
+    data.append('api_token', apiToken())
+    return data
+  }
+
+
 
   // POST new note from form data in new note modal
   function postNoteForm(){
     $.post({
         url: index + "notes",
-        data: {api_token: apiToken(), title: $('#notetitle').val(), body: $('#notebody').val(), tags: $('#notetags').val()},
+        processData: false,
+        contentType: false,
+        data: NoteFormData('noteform'),
         success: function(data){
                   $('#maincontent').prepend(note_template(data));
                   $('#newmodal').modal('hide');
@@ -142,10 +137,13 @@ $(document).ready(function() {
     $.ajax({
          url: index + "notes/" + $('#disabledinput').val(),
          type: 'PUT',
-         data: {api_token: apiToken(), title: $('#notetitle').val(), body: $('#notebody').val(), tags: $('#notetags').val()},
+         processData: false,
+         contentType: false,
+         data: NoteFormData('editnoteform'),
          success: function(data){
                    $('#newmodal').modal('hide');
-                   getuserindex()
+                   getindex()
+                  //  getuserindex()
                  },
          error: function(data){
                    console.log(data)
@@ -160,11 +158,9 @@ $(document).ready(function() {
         url: index + "users",
         data: {email: $('#useremail').val(), password: $('#userpassword').val(), password_confirmation: $('#passwordconfirm').val()},
         success: function(data){
-                  console.log(data);
                   $('#newmodal').modal('hide');
                 },
         error: function(data){
-                  console.log(data);
                   $('#userformerrors').html("<p class=\"bg-danger\">" + data.responseText + "</p>");
                 }
     })
@@ -214,12 +210,16 @@ $(document).ready(function() {
 
   // Create form to edit an existing post through the modal
   $('#maincontent.col-sm-12').on('click', '#noteedit', function(ev){
-    var id = ($(this).parents('div.panel.panel-info').find('div.id').text())
+    var id = ($(this).parents('div.panel.panel-default').find('div.id').text())
     $.getJSON(index+"notes/"+id)
       .done(function(data) {
         createModal(editNoteTemplate, "Edit Note", data)
         var tagsstring = data.tags.map(function(x){return x.name}).join(", ")
-        // window.foo = data;
+        if (data.note_image){
+          $('.currentimage').show();
+          $('.currentimage').append("<img src=\"" + data.note_image + "\" class=\"img-responsive pull-right\" id=\"tempimage\"/>")
+          $('.help-block').text("Will replace your current note image.")
+        }
         $('#notetitle').val(data.title);
         $('#disabledinput').val(id);
         $('#notebody').val(data.body);

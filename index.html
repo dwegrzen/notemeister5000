@@ -68,38 +68,27 @@
   </div><!-- /.modal -->
 
   <script id="note" type="text/x-handlebars-template">
-    <div class="panel panel-info">
+    <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="panel-title">{{title}}</h3>
       </div>
       <div class="panel-body">
-        <h5>{{user.email}} <small>on {{time}}</small></h5>
-        <p>{{paragraphSplit body}}</p>
-      </div>
-      <div class="panel-footer">
-        <ul class="tag_list list-inline">
-          <li>Tags: </li>
-        {{#each tags}}
-          <li><a href="#">{{this.name}}</a></li>
-        {{/each}}
-        </ul>
-      </div>
-    </div>
-  </script>
-
-  <script id="usernote" type="text/x-handlebars-template">
-    <div class="panel panel-info">
-      <div class="panel-heading">
-        <h3 class="panel-title">{{title}}</h3>
-      </div>
-      <div class="panel-body">
-        <h5>{{user.email}} <small>on {{time}}</small></h5>
-        <p>{{paragraphSplit body}}</p>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-sm-4" id="imagecontainer">
+              <img src="{{note_image}}" class="img-responsive img-rounded center-block" id="noteimage">
+            </div>
+              <div class="col-sm-8 responsivecol">
+                <h5>{{user.email}} <small>on {{time}}</small></h5>
+                <p>{{paragraphSplit body}}</p>
+              </div>
+          </div>
+        </div>
       </div>
       <div class="id" style="display:none"><p>{{id}}</p></div>
-      <div class="panel-footer edit">
-        <button class="btn btn-primary btn-sm pull-right" id="noteedit" type="submit">Edit</button>
-        <ul class="tag_list list-inline vcenter">
+      <div class="panel-footer">
+        <button style="display: none;" class="btn btn-primary btn-sm pull-right" id="noteedit" type="submit">Edit</button>
+        <ul class="tag_list list-inline">
           <li>Tags: </li>
         {{#each tags}}
           <li><a href="#">{{this.name}}</a></li>
@@ -113,15 +102,20 @@
     <form id="noteform">
       <div class="form-group">
         <label >Note Title <small>(Required)</small></label>
-        <input type="text" class="form-control" id="notetitle" placeholder="Your title...">
+        <input type="text" class="form-control" name="title" id="notetitle" placeholder="Your title...">
       </div>
       <div class="form-group">
         <label >Note Body <small>(Required)</small></label>
-        <textarea type="text" class="form-control" rows="5" id="notebody" placeholder="Your note..."></textarea>
+        <textarea type="text" class="form-control" name="body" rows="5" id="notebody" placeholder="Your note..."></textarea>
+      </div>
+      <div class="form-group">
+        <label >File input</label>
+        <input type="file" name="note_image" id="note_image">
+        <p class="help-block">Upload an image to show with your note.</p>
       </div>
       <div class="form-group">
         <label >Tags <small>(optional)</small></label>
-        <input type="text" class="form-control" id="notetags" placeholder="Tags...(separate each with a comma)">
+        <input type="text" class="form-control" name="tags" id="notetags" placeholder="Tags...(separate each with a comma)">
       </div>
     </div>
     <div id="userformerrors">
@@ -134,7 +128,7 @@
     <form id="editnoteform">
       <div class="form-group">
         <label >Note Title <small>(Required)</small></label>
-        <input type="text" class="form-control" id="notetitle" placeholder="Your title...">
+        <input type="text" name="title" class="form-control" id="notetitle" placeholder="Your title...">
       </div>
       <div class="form-group" style="display:none">
           <label >Note ID</label>
@@ -142,11 +136,20 @@
       </div>
       <div class="form-group">
         <label >Note Body <small>(Required)</small></label>
-        <textarea type="text" class="form-control" rows="5" id="notebody" placeholder="Your note..."></textarea>
+        <textarea name="body" type="text" class="form-control" rows="5" id="notebody" placeholder="Your note..."></textarea>
+      </div>
+      <div class="row">
+        <div style="display: none;" class="col-sm-4 currentimage">
+        </div>
+        <div class="form-group col-sm-8">
+          <label >File input</label>
+          <input type="file" name="note_image" id="note_image">
+          <p class="help-block">Upload an image to show with your note.</p>
+        </div>
       </div>
       <div class="form-group">
         <label >Tags <small>(optional)</small></label>
-        <input type="text" class="form-control" id="notetags" placeholder="Tags...(separate each with a comma)">
+        <input type="text" name="tags" class="form-control" id="notetags" placeholder="Tags...(separate each with a comma)">
       </div>
     <div id="userformerrors">
     </div>
